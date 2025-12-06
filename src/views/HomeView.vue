@@ -6,7 +6,7 @@
 <!--      <PublicationColumn/>-->
 <!--      <SendPost/>-->
 <!--    </div>-->
-<!--    <Account/>-->
+    <Account/>
   </v-container>
 </template>
 
