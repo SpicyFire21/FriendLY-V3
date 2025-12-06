@@ -1,11 +1,11 @@
 <template>
   <v-container fluid class="pa-0 ma-0 Vrow">
     <AsideBar/>
-<!--    <div class="scroll-content">-->
-<!--      <StoriesView/>-->
+    <div class="scroll-content">
+      <StoriesView/>
 <!--      <PublicationColumn/>-->
 <!--      <SendPost/>-->
-<!--    </div>-->
+    </div>
     <Account/>
   </v-container>
 </template>
