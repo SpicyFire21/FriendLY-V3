@@ -3,7 +3,7 @@
     <AsideBar/>
     <div class="scroll-content">
       <StoriesView/>
-<!--      <PublicationColumn/>-->
+      <PublicationColumn/>
 <!--      <SendPost/>-->
     </div>
     <Account/>

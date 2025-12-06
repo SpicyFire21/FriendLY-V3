@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
+import DateFormats from './plugins/luxon.js';
 import App from './App.vue'
 import router from './router'
 import io from 'socket.io-client'
@@ -27,7 +28,7 @@ const vuetify = createVuetify({
 
 
 
-
+app.use(DateFormats);
 app.use(createPinia())
 app.use(router)
 app.use(vuetify)
