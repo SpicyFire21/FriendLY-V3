@@ -1,0 +1,98 @@
+:root {
+    --BleuFonce: #007BFF;                   /* title, actions button, icons, notifications, glowing element,   */
+    --Violet:#6A5ACD;                       /* important button, icons */
+    --BleuClair:#A8D8FF;                    /* second button, hover,  */
+    --GrisPerle:#F5F5F5;                    /* background, second notifications, */
+    --GrisNuit:#2C2F33;                     /* text, border,  */
+    --BlancPur:#FFFFFF;                     /* sections,... */
+
+    --blurBackground:rgb(0,0,0,0.45);      /* transparent black background */
+
+    --red: #c70000;
+    --red2: #ff9c9c;
+    --green:#4f8a00;
+}
+
+
+
+
+h1,h2,h3,h4,h5,h6 {
+    color: var(--Violet);
+}
+p, span{
+    color:var(--GrisNuit);
+}
+.v-main__wrap {
+    background-color: var(--GrisPerle) !important;
+}
+.fa-selfcenter {
+    display: flex !important;
+    align-items: center;
+}
+.fa-lefttop{
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(-150%,300%);
+}
+.fa-3xl{
+    font-size:3em ;
+}
+
+@keyframes shake {
+0% {
+    transform: rotate(0deg);
+}
+25% {
+    transform: rotate(15deg);
+}
+50% {
+    transform: rotate(-30deg);
+}
+75% {
+    transform: rotate(15deg);
+}
+100% {
+    transform: rotate(0deg);
+}
+}
+@keyframes pulse {
+0% {
+    transform: scale(1);
+}
+25% {
+    transform: scale(1.1);
+}
+50% {
+    transform: scale(0.9);
+}
+75% {
+    transform: scale(1.1);
+}
+100% {
+    transform: scale(1);
+}
+}
+@keyframes like {
+0% {
+    transform: rotate(0deg) scale(0.9);
+}
+15% {
+    transform: rotate(10deg) scale(0.95);
+}
+30% {
+    transform: rotate(0deg) scale(1);
+}
+45% {
+    transform: rotate(-10deg) scale(1.1);
+}
+60% {
+    transform: rotate(-20deg) scale(1.2);
+}
+75% {
+    transform: rotate(-10deg) scale(1.1);
+}
+100% {
+    transform: rotate(0deg) scale(1);
+}
+}
