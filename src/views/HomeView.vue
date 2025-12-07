@@ -4,7 +4,7 @@
     <div class="scroll-content">
       <StoriesView/>
       <PublicationColumn/>
-<!--      <SendPost/>-->
+      <SendPost/>
     </div>
     <Account/>
   </v-container>
