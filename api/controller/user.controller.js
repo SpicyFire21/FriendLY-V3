@@ -83,8 +83,11 @@ export const addUser = async (req,res) => {
     try{
         console.log(req.body)
         let data = await userService.addUser(req.body);
-        await webhook.discord(`**${data.data.pseudo}** est arrivé(e) sur FriendLY`)
-        return res.status(200).json({ data: data });
+        if (data.error ===0){
+            await webhook.discord(`**${data.data.pseudo}** est arrivé(e) sur FriendLY`)
+
+        }
+        return res.status(data.status).json({ data: data });
     } catch(error){
         console.log(error);
         return res.status(500).send("Erreur lors de la création de l'utilisateur");

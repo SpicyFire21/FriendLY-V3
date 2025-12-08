@@ -126,10 +126,9 @@
 
 <script setup>
 import AvatarView from "@/components/utils/AvatarView.vue";
-import {mapActions, mapGetters, mapState} from "vuex";
 import NameTag from "@/components/utils/NameTag.vue";
 import {computed, onBeforeUnmount, onMounted, ref} from "vue";
-import {useMessageStore, usePostStore, useUserStore} from "@/stores/index.js";
+import {usePostStore, useUserStore} from "@/stores/index.js";
 
 let showComment = ref(false)
 let isLoved = ref(false)
@@ -233,20 +232,20 @@ function handleSave(postid) {
 }
 function handleComment(postid) {
   console.log(postid, "comment");
-  showComment = true;
+  showComment.value = true;
 }
 function handleShare(postid) {
   console.log(postid, "share");
 }
 function closeComments() {
-  showComment = false;
+  showComment.value = false;
 }
 
 async function setIsLoved(postid){
   await postStore.getLoves();
   const currentUserID = userStore.currentUser.id
-  isLoved = postStore.loves.some(item => item.idpost === postid && item.iduser === currentUserID)
-  return isLoved
+  isLoved.value = postStore.loves.some(item => item.idpost === postid && item.iduser === currentUserID)
+  return isLoved.value
 
 
 }
@@ -254,8 +253,8 @@ async function setIsLoved(postid){
 async function setIsLiked(postid) {
   await postStore.getLikes();
   const currentUserID = userStore.currentUser.id
-  isLiked = postStore.likes.some(item => item.idpost === postid && item.iduser === currentUserID)
-  return isLiked
+  isLiked.value = postStore.likes.some(item => item.idpost === postid && item.iduser === currentUserID)
+  return isLiked.value
 
 
 }
@@ -264,8 +263,7 @@ function handleInputComment(event) {
   showSendButton(event)
 }
 function showSendButton() {
-  let msg = comment;
-  showSendBtn = msg !== "";
+  showSendBtn.value = comment !== "";
 }
 async function onSendComment() {
   if (showSendBtn) {
@@ -299,7 +297,7 @@ onMounted(async()=>{
 })
 
 onBeforeUnmount(() => {
-  isMounted.value = false
+  // isMounted.value = false;
 })
 
 </script>

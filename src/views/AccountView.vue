@@ -4,23 +4,23 @@
 
     <div class="account-container">
       <!-- Affiche uniquement si utilisateur courant -->
-      <div class="account-content" v-if="currentUser">
-        <AvatarView size="200px" :avatar="currentUser.avatar" />
+      <div class="account-content" v-if="usersStore.currentUser">
+        <AvatarView size="200px" :avatar="usersStore.currentUser.avatar" />
 
         <div class="account-data">
           <div class="account-item">
-            <b style="font-size: 25px">{{ currentUser.pseudo }}</b>
+            <b style="font-size: 25px">{{ usersStore.currentUser.pseudo }}</b>
             <button @click="goEditAccount" class="edit-button">Modifier le profil</button>
           </div>
 
           <div class="account-item">
-            <p>{{ getCountPostsByUser(currentUser.id) }} publications</p>
-            <p>{{ getCountFollowersOfCurrentUser }} follow(s)</p>
-            <p>{{ getCountSubscribersOfCurrentUser }} follower(s)</p>
+            <p>{{ postsStore.getCountPostsByUser(usersStore.currentUser.id) }} publications</p>
+            <p>{{ usersStore.getCountFollowersOfCurrentUser }} follow(s)</p>
+            <p>{{ usersStore.getCountSubscribersOfCurrentUser }} follower(s)</p>
           </div>
 
           <div>
-            <p style="white-space: pre-line;">{{ currentUser.bio }}</p>
+            <p style="white-space: pre-line;">{{ usersStore.currentUser.bio }}</p>
           </div>
         </div>
       </div>
@@ -62,32 +62,25 @@
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
 
-// Composants
+
 import AsideBar from "@/components/navigation/AsideBar.vue"
 import AvatarView from "@/components/utils/AvatarView.vue"
 import SendPost from "@/components/utils/sendPost.vue"
 
-// Stores (Pinia à utiliser au lieu de Vuex)
-import { useUserStore, usePostStore } from "@/stores"
+
+import {usePostStore, useUserStore} from "@/stores/index.js";
 
 const CustomDialog = SendPost
 
-// Router
 const router = useRouter()
 
-// Stores
-const usersStore = useUsersStore()
-const postsStore = usePostsStore()
+const usersStore = useUserStore()
+const postsStore = usePostStore()
 
-// State
-const currentUser = usersStore.currentUser
-const getCountFollowersOfCurrentUser = usersStore.getCountFollowersOfCurrentUser
-const getCountSubscribersOfCurrentUser = usersStore.getCountSubscribersOfCurrentUser
-const getCountPostsByUser = postsStore.getCountPostsByUser
 
 // Méthodes
 async function goEditAccount() {
-  if (currentUser) {
+  if (usersStore.currentUser) {
     await router.push({ name: "editaccount" })
   }
 }
@@ -96,9 +89,9 @@ async function goEditAccount() {
 onMounted(async () => {
   await postsStore.getPostsToStore()
   await usersStore.getUsersToStore()
-  if (currentUser) {
-    await usersStore.getFollowersByUserID(currentUser.id)
-    await usersStore.getSubscribersByUserID(currentUser.id)
+  if (usersStore.currentUser) {
+    await usersStore.getFollowersByUserID(usersStore.currentUser.id)
+    await usersStore.getSubscribersByUserID(usersStore.currentUser.id)
   }
 })
 </script>
