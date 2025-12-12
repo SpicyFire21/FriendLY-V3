@@ -35,6 +35,8 @@ onMounted(async () => {
   await prepareImages();
   generateBubbles(bubblesCount.value);
   startAnimation();
+
+
 });
 
 onBeforeUnmount(()=> {
