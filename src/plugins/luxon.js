@@ -20,5 +20,8 @@ export default {
         app.config.globalProperties.$DayMonth = (dateString) => {
             return DateTime.fromISO(dateString).toFormat("dd MMMM");
         };
+        app.config.globalProperties.$DayMonthYear2 = (dateString) => {
+            return DateTime.fromISO(dateString).toFormat("dd/MM/yyyy");
+        };
     },
 };

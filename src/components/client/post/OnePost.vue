@@ -1,38 +1,27 @@
 <template>
   <div v-if="props.postdata">
     <div class="post-author">
-
       <AvatarView :avatar="userStore.getUserById(props.postdata.authorid).avatar" size="40px"/>
       <NameTag :user="userStore.getUserById(props.postdata.authorid)"/>
       <v-spacer/>
       <i class="fa-solid fa-ellipsis fa-xl" style="color: var(--Violet);"></i>
     </div>
     <div>
-
       <img v-if="props.postdata.image" :src="avatarSrc" :alt="props.postdata.description" class="post-view"/>
-
-
     </div>
-
     <div class="post-description">
       <div class="post-buttons">
         <div class="btn-count-post">
-
           <div v-if="isLoved" class="btn-count-post-content">
             <button @click="handleLove(props.postdata.id)">
               <i class="fa-selfcenter fa-solid fa-heart fa-xl" style="color: var(--red);"></i>
-
             </button>
             <b style="font-size: 12px;color:var(--red) ;">{{ postStore.getCountLoves(postdata.id) }}</b>
           </div>
-
           <div v-if="!isLoved" class="btn-count-post-content">
-            <button @click="handleLove(props.postdata.id)"><i class="fa-selfcenter fa-regular fa-heart fa-xl"
-                                                        style="color: var(--red);"></i></button>
+            <button @click="handleLove(props.postdata.id)"><i class="fa-selfcenter fa-regular fa-heart fa-xl" style="color: var(--red);"></i></button>
             <b style="font-size: 12px;color:var(--red) ;">{{ postStore.getCountLoves(props.postdata.id) }}</b>
           </div>
-
-
         </div>
 
         <div class="btn-count-post">
@@ -99,7 +88,22 @@
           </div>
           <div class="comments-scroll">
             <div class="comments-scroll-content">
+              <div v-for="(comment, date) in commentStore.comments" :key="date">
 
+                <div class="comment">
+                  <div class="comment-author">
+                    <AvatarView :avatar="userStore.getUserById(comment.iduser).avatar" size="35px"/>
+                  </div>
+                  <div class="comment-body">
+                    <NameTag :user="userStore.getUserById(comment.iduser)"/>
+                    <p>{{comment.comment}}</p>
+                    <em style="font-size:12px">{{$DayMonthYear2(comment.postedat)}}</em>
+                  </div>
+
+                </div><hr>
+
+
+              </div>
             </div>
             <div class="send-comment">
               <i class="fa-selfcenter fa-regular fa-face-laugh-beam fa-xl" style="color: var(--Violet);"></i>
@@ -127,8 +131,11 @@
 <script setup>
 import AvatarView from "@/components/utils/AvatarView.vue";
 import NameTag from "@/components/utils/NameTag.vue";
-import {computed, onBeforeUnmount, onMounted, ref} from "vue";
-import {usePostStore, useUserStore} from "@/stores/index.js";
+import {computed, getCurrentInstance, onBeforeUnmount, onMounted, ref} from "vue";
+import {useCommentStore, usePostStore, useUserStore} from "@/stores/index.js";
+
+const socket = getCurrentInstance().appContext.config.globalProperties.$socket
+
 
 let showComment = ref(false)
 // let isLoved = ref(false)
@@ -146,6 +153,7 @@ const props = defineProps({
 
 const postStore = usePostStore();
 const userStore = useUserStore();
+const commentStore = useCommentStore();
 
 const defaultAvatar = computed(()=> {
   return new URL('@/assets/no_avatar.png', import.meta.url).href
@@ -182,8 +190,7 @@ const avatarSrc = computed(()=> {
 
 const isLoved = computed(() => {
   const uid = userStore.currentUser.id
-  console.log(postStore.loves)
-  console.log(postStore.likes)
+
   return postStore.loves.some(
       l => l.idpost === props.postdata.id && l.iduser === uid
   )
@@ -235,7 +242,6 @@ function handleSave(postid) {
   console.log(postid, "save");
 }
 function handleComment(postid) {
-  console.log(postid, "comment");
   showComment.value = true;
 }
 function handleShare(postid) {
@@ -255,43 +261,70 @@ function showSendButton() {
 async function onSendComment() {
   if (showSendBtn) {
     // code a finir pour l'envoie de commentaire
-    // const data = {
-    //   senderid: userStore.currentUser.id,
-    //   receiverid: userStore.getUserById(messageStore.currentSenderId).id,
-    //   content: comment,
-    //   createdat: new Date().toISOString()
-    // }
-    // this.$socket.emit("post-comment", data);
-    // comment='';
+    const data = {
+      idpost: props.postdata.id,
+      iduser: userStore.currentUser.id,
+      comment: comment.value,
+      postedat: new Date().toISOString()
+    }
+    socket.emit("post-comment", data);
+    comment.value='';
   }
 
 
 }
+
+
+socket.on("post-comment", (data) => {
+
+  if(commentStore.comments !==null){
+    commentStore.addComment(data);
+  }
+  console.log(data)
+  console.log(commentStore.comments)
+});
+
 
 onMounted(async()=>{
   // isMounted = true;  // On marque le composant comme monté
   try {
     await postStore.getPostsToStore();
     await userStore.getUsersToStore();
+    await commentStore.getComments();
     await postStore.getLikes()
     await postStore.getLoves()
-    console.log("loves", postStore.loves)
-    console.log("likes", postStore.likes)
+    console.log(commentStore.comments)
 
   } catch (error) {
     console.error("Erreur lors de l'exécution des requêtes", error);
   }
 })
 
-onBeforeUnmount(() => {
-  // isMounted.value = false;
+onBeforeUnmount(()=> {
+  socket.off("post-comment");
 })
 
 </script>
 
-
-
 <style scoped>
+.comment-author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.comment-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-left: 10px;
+}
+.comment {
+ display: flex;
+  flex-direction: row;
+  padding: 0 10px;
+}
+
 .post-view {
   aspect-ratio: 1/1;
   max-width: 100%;

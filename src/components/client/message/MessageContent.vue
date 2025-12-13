@@ -27,7 +27,7 @@
                 <p class="message">{{ item.content }}</p>
               </div>
               <!-- affiche juste l’heure du message -->
-              <em>{{ new Date(item.createdat).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) }}</em>
+              <em>{{$DayMonthYear(item.postedat)}}</em>
             </div>
 
           </div>
@@ -211,8 +211,6 @@ socket.on("typing", (data) => {
 });
 
 socket.on("chat-message", (data) => {
-  console.log("chat-message-local", data)
-  console.log("", messageStore.currentMessages)
   if(messageStore.currentMessages !==null){
     messageStore.addMessageMutation(data);
   }

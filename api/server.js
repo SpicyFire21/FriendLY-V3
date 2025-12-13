@@ -65,6 +65,21 @@ io.on("connection", (socket) => {
 
         io.emit("chat-message", data); // broadcast à tous
     });
+
+
+    socket.on("post-comment", (data) => {
+        console.log("📨 Nouveau commentaire :", data);
+
+        try {
+            axios.post(`${apiURL}/comments/send`,data)
+                .then(() => console.log("💾 Commentaite enregistré dans la BDD"))
+        }catch (e){
+            console.error(e)
+        }
+
+        io.emit("post-comment", data); // broadcast à tous
+    });
+
 });
 
 
