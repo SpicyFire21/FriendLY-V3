@@ -131,9 +131,9 @@ import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import {usePostStore, useUserStore} from "@/stores/index.js";
 
 let showComment = ref(false)
-let isLoved = ref(false)
-let isLiked = ref(false)
-let isMounted = ref(false)
+// let isLoved = ref(false)
+// let isLiked = ref(false)
+// let isMounted = ref(false)
 let comment = ref("")
 let showSendBtn = ref(false)
 
@@ -150,8 +150,6 @@ const userStore = useUserStore();
 const defaultAvatar = computed(()=> {
   return new URL('@/assets/no_avatar.png', import.meta.url).href
 })
-
-
 const avatarSrc = computed(()=> {
   if (!props.postdata.image) {
     return defaultAvatar;
@@ -181,46 +179,52 @@ const avatarSrc = computed(()=> {
   return props.postdata.image; // déjà une URL ou base64
 })
 
-async function toggleReaction(postid,newState){
-  await postStore.getLoves();
-  await postStore.getLikes();
 
+const isLoved = computed(() => {
+  const uid = userStore.currentUser.id
+  console.log(postStore.loves)
+  console.log(postStore.likes)
+  return postStore.loves.some(
+      l => l.idpost === props.postdata.id && l.iduser === uid
+  )
+})
 
-  const currentUserID = userStore.currentUser.id
-  const alreadyLoved = postStore.loves.find(item => item.idpost === postid && item.iduser === currentUserID)
-  const alreadyLiked = postStore.likes.find(item => item.idpost === postid && item.iduser === currentUserID)
+const isLiked = computed(() => {
+  const uid = userStore.currentUser.id
+  return postStore.likes.some(
+      l => l.idpost === props.postdata.id && l.iduser === uid
+  )
+})
 
-  const data = {
-    idpost: postid,
-    iduser: currentUserID
-  };
+async function toggleReaction(postid, type) {
+  const uid = userStore.currentUser.id
+  const data = { idpost: postid, iduser: uid }
 
-  if (newState === 'love'){
-    if (alreadyLoved){
-      await postStore.removeLove(data);
+  const loved = postStore.loves.some(l => l.idpost === postid && l.iduser === uid)
+  const liked = postStore.likes.some(l => l.idpost === postid && l.iduser === uid)
+
+  if (type === "love") {
+    if (loved) {
+      await postStore.removeLoveAction(data)
     } else {
-      if (alreadyLiked){
-        await postStore.removeLike(data)
-      }
-      await postStore.addLove(data)
-
+      if (liked) await postStore.removeLikeAction(data)
+      await postStore.addLoveAction(data)
     }
-  } else if (newState === 'like'){
-    if (alreadyLiked){
-      await postStore.removeLike(data)
-    } else {
-      if (alreadyLoved){
-        await postStore.removeLove(data)
-      }
-      await postStore.addLike(data)
-    }
-  } else {
-    console.error("tahm kench")
   }
-  await setIsLoved(postid)
-  await setIsLiked(postid)
 
+  if (type === "like") {
+    if (liked) {
+      await postStore.removeLikeAction(data)
+    } else {
+      if (loved) await postStore.removeLoveAction(data)
+      await postStore.addLikeAction(data)
+    }
+  }
 }
+
+
+
+
 async function handleLove(postid) {
   await toggleReaction(postid,"love");
 }
@@ -241,29 +245,12 @@ function closeComments() {
   showComment.value = false;
 }
 
-async function setIsLoved(postid){
-  await postStore.getLoves();
-  const currentUserID = userStore.currentUser.id
-  isLoved.value = postStore.loves.some(item => item.idpost === postid && item.iduser === currentUserID)
-  return isLoved.value
-
-
-}
-
-async function setIsLiked(postid) {
-  await postStore.getLikes();
-  const currentUserID = userStore.currentUser.id
-  isLiked.value = postStore.likes.some(item => item.idpost === postid && item.iduser === currentUserID)
-  return isLiked.value
-
-
-}
 function handleInputComment(event) {
   // this.adjustHeight(event)
   showSendButton(event)
 }
 function showSendButton() {
-  showSendBtn.value = comment !== "";
+  showSendBtn.value = comment.value !== "";
 }
 async function onSendComment() {
   if (showSendBtn) {
@@ -282,15 +269,15 @@ async function onSendComment() {
 }
 
 onMounted(async()=>{
-  isMounted = true;  // On marque le composant comme monté
+  // isMounted = true;  // On marque le composant comme monté
   try {
     await postStore.getPostsToStore();
     await userStore.getUsersToStore();
+    await postStore.getLikes()
+    await postStore.getLoves()
+    console.log("loves", postStore.loves)
+    console.log("likes", postStore.likes)
 
-    if (isMounted) {
-      await setIsLoved(props.postdata.id);
-      await setIsLiked(props.postdata.id);
-    }
   } catch (error) {
     console.error("Erreur lors de l'exécution des requêtes", error);
   }

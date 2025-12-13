@@ -209,7 +209,7 @@ onMounted(() => {
   cursor: pointer;
   background-color: var(--BleuClair);
   border-radius: 15px;
-  transition: background-color 0.4s ease, transform 0.4s ease;
+  transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out;
 }
 
 

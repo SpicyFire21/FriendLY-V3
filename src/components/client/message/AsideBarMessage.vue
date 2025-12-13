@@ -62,7 +62,7 @@ function setupSocketListeners() {
     );
 
     if (user && user.id !== userStore.currentUser.id) {
-      typingUsers[user.id] = true;
+      typingUsers.value[user.id] = true;
 
       clearTimeout(typingTimeouts.value[user.id]);
       typingTimeouts.value[user.id] = setTimeout(() => {
@@ -74,33 +74,28 @@ function setupSocketListeners() {
 
 // permet d'avoir toutes les données des followers de l'utilisateur courant
 async function setFollowersMessage() {
-  if (!userStore.followers || !userStore.users) {
+  if (!userStore.followers || !userStore.users) return;
 
-    console.log(userStore.followers)
-    console.log(userStore.users)
-
-    return;
-  }
-
-  const followerIds = userStore.followers.map(follower =>
-      follower.iduser_1 || follower.id
+  const followerIds = userStore.followers.map(f =>
+      f.iduser_1 || f.id
   );
 
-  followersMessage = userStore.users.filter(item =>
-      followerIds.includes(item.id)
+  followersMessage.value = userStore.users.filter(user =>
+      followerIds.includes(user.id)
   );
 }
+
 
 onMounted(async()=>{
   await userStore.getUsersToStore();
   await userStore.getFollowersByUserID(userStore.currentUser.id);
   await setFollowersMessage();
-  console.log(followersMessage)
+  console.log(followersMessage.value)
   setupSocketListeners();
 })
 
 watch(
-    [userStore.followers, userStore.users],
+    () => [userStore.followers, userStore.users],
     async () => {
       await setFollowersMessage();
     },

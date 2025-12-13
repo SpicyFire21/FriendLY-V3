@@ -31,8 +31,8 @@ export const usePostStore = defineStore('posts',() =>{
     const setLikes = (data) => {
         likes.value = data;
     }
-    const setLoves =  (loves) => {
-        loves.value = loves;
+    const setLoves =  (data) => {
+        loves.value = data;
     }
     const addLove = (data) => {
         loves.value.push(data)
