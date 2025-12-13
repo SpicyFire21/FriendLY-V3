@@ -2,7 +2,7 @@
   <aside class="asidebar-general" :class="isCompact ? 'asidebar-compact' : 'asidebar-no-compact'" v-if="userStore.currentUser !==null">
 
     <div v-if="!isCompact" style="width: 15vw;" >
-      <img src="../../../public/FriendLY.webp" alt="" class="logo">
+      <img src="/FriendLY.webp" alt="" class="logo">
 
       <div class="asidebar-container">
         <div class="asidebar-content">
@@ -52,7 +52,7 @@
     </div>
 
     <div v-else class="asidebar-div-compact">
-      <img src="../../../public/logo.webp" alt="" class="logo-compact">
+      <img src="/logo.webp" alt="" class="logo-compact">
 
       <div class="asidebar-container-compact">
         <div class="asidebar-content-compact">

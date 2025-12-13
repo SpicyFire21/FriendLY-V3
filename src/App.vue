@@ -1,6 +1,5 @@
 <template>
   <v-app>
-
     <v-main>
       <LogNewpost/>
       <router-view/>
@@ -8,15 +7,8 @@
   </v-app>
 </template>
 
-<script>
-
+<script setup>
 import LogNewpost from "@/components/client/post/LogNewPost.vue";
-
-export default {
-  name: 'App',
-  components: {LogNewpost},
-  data: () => ({}),
-};
 </script>
 
 <style>

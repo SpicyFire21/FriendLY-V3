@@ -2,7 +2,9 @@
   <div :class="messageStore.currentMessages ? 'message-content-conv' : 'message-content-void'">
     <div v-if="messageStore.currentMessages" class="current-conversation">
       <div class="header-conv">
-        <b v-if="messageStore.currentSenderId"><NameTag :user="userStore.getUserById(messageStore.currentSenderId)"/></b>
+        <b v-if="messageStore.currentSenderId">
+          <AvatarView :avatar="userStore.getUserById(messageStore.currentSenderId).avatar"/>
+          <NameTag :user="userStore.getUserById(messageStore.currentSenderId)"/></b>
         <v-spacer/>
         <i class="fa-solid btn-call fa-selfcenter fa-phone fa-xl" style="color: var(--BleuFonce);"></i>
         <br>
@@ -138,11 +140,14 @@ function showSendButton() {
 }
 
 function onTyping() {
-  socket.emit("typing", {
-    from: userStore.currentUser.pseudo,
-    to: userStore.getUserById(userStore.currentSenderId).pseudo,
 
-  });
+  const data = {
+    from: userStore.currentUser.pseudo,
+    to: userStore.getUserById(messageStore.currentSenderId).pseudo,
+
+  }
+  console.log(data)
+  socket.emit("typing", data);
 
 
 
@@ -160,7 +165,7 @@ async function onSendMessage() {
   if (showSendBtn) {
     const data = {
       senderid: userStore.currentUser.id,
-      receiverid: userStore.getUserById(userStore.currentSenderId).id,
+      receiverid: userStore.getUserById(messageStore.currentSenderId).id,
       content: message.value,
       createdat: new Date().toISOString()
     }
@@ -179,6 +184,11 @@ onMounted(async()=>{
   socket.on('connect', () => {
     console.log('Connecté au 🧦');
   });
+
+  // console.log("currentSenderId", messageStore.currentSenderId)
+  // console.log("currentUser", userStore.currentUser)
+
+
 })
 
 //created
@@ -190,7 +200,7 @@ socket.on("typing", (data) => {
 
   if (data.to === userStore.currentUser.pseudo) {
     currentSender.value = data.from;
-    typingUser = data.to
+    typingUser.value = data.to
 
 
     clearTimeout(typingTimeout);

@@ -2,6 +2,7 @@
   <aside class="asidebar-message">
     <h2 style="padding-left: 15px">Messages</h2>
     <hr>
+
     <div class="asidebar-message-container" v-for="(item,index) in followersMessage" :key="index">
       <div class="asidebar-message-content">
         <div class="asidebar-message-item" @click="showMessages(item.id)" v-if="item.id !== userStore.currentUser.id"  :class="selectedUser(item.id) ? 'selected' : 'unselected'">
@@ -9,9 +10,9 @@
           <NameTag :user="item"/>
 
           <span v-if="typingUsers[item.id]" class="typing-indicator">
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
+            <span class="dot">.</span>
+            <span class="dot">.</span>
+            <span class="dot">.</span>
           </span>
         </div>
       </div>
@@ -46,6 +47,8 @@ async function showMessages(idSender){
   const idReceiver = userStore.currentUser.id;
   messageStore.updateCurrentReceiverId(idReceiver)
 
+  console.log(idSender,idReceiver)
+
   messageStore.setCurrentMessages([]);
   await messageStore.getConversationStore({idReceiver,idSender});
   console.log("currentMessages", messageStore.currentMessages);
@@ -53,25 +56,34 @@ async function showMessages(idSender){
 }
 
 function setupSocketListeners() {
-  socket.on('typing', (data) => {
-    // Trouve l'utilisateur par ID plutôt que par pseudo
-    const user = followersMessage.find(u => u.id === data.from || u.pseudo === data.from);
+  socket.on("typing", (data) => {
+    const user = followersMessage.value.find(
+        (u) => u.id === data.from || u.pseudo === data.from
+    );
 
     if (user && user.id !== userStore.currentUser.id) {
-      this.$set(typingUsers, user.id, true);
+      typingUsers[user.id] = true;
 
-      clearTimeout(typingTimeouts[user.id]);
-      typingTimeouts[user.id] = setTimeout(() => {
-        this.$set(typingUsers, user.id, false);
+      clearTimeout(typingTimeouts.value[user.id]);
+      typingTimeouts.value[user.id] = setTimeout(() => {
+        typingUsers.value[user.id] = false;
       }, 2000);
     }
   });
 }
+
+// permet d'avoir toutes les données des followers de l'utilisateur courant
 async function setFollowersMessage() {
-  if (!userStore.followers || !userStore.users) return;
+  if (!userStore.followers || !userStore.users) {
+
+    console.log(userStore.followers)
+    console.log(userStore.users)
+
+    return;
+  }
 
   const followerIds = userStore.followers.map(follower =>
-      follower.iduser_1 || follower.id // Adaptez selon votre structure réelle
+      follower.iduser_1 || follower.id
   );
 
   followersMessage = userStore.users.filter(item =>
