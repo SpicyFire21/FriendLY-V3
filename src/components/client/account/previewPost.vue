@@ -6,7 +6,7 @@
 
 <script setup>
 
-import {computed} from "vue";
+import {computed, onBeforeUnmount} from "vue";
 
 const props = defineProps({
   postdata: {
@@ -47,6 +47,13 @@ const avatarSrc = computed(()=> {
   }
 
   return props.postdata.image; // déjà une URL ou base64
+})
+
+onBeforeUnmount(()=> {
+
+  if (avatarSrc) {
+    URL.revokeObjectURL(avatarSrc)
+  }
 })
 
 </script>

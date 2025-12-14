@@ -158,6 +158,7 @@ const commentStore = useCommentStore();
 const defaultAvatar = computed(()=> {
   return new URL('@/assets/no_avatar.png', import.meta.url).href
 })
+
 const avatarSrc = computed(()=> {
   if (!props.postdata.image) {
     return defaultAvatar;
@@ -302,6 +303,9 @@ onMounted(async()=>{
 
 onBeforeUnmount(()=> {
   socket.off("post-comment");
+  if (avatarSrc) {
+    URL.revokeObjectURL(avatarSrc)
+  }
 })
 
 </script>

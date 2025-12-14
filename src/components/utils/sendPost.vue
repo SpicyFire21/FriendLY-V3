@@ -30,7 +30,7 @@
 <script setup>
 import PostCropper from "@/components/utils/PostCropper.vue";
 import ValidNewPost from "@/components/client/post/validNewPost.vue";
-import {ref} from "vue";
+import {onBeforeUnmount, ref} from "vue";
 import {usePostStore, useUserStore} from "@/stores/index.js";
 
 let blobIMG = ref(null)
@@ -64,6 +64,12 @@ function handleFileUpload(event){
   previewPost.value = URL.createObjectURL(file);
   showCropper.value = true; // ← Active le cropper après avoir chargé l'image
 }
+
+onBeforeUnmount(()=> {
+  if (previewPost.value) {
+    URL.revokeObjectURL(previewPost.value)
+  }
+})
 
 async function handleCroppedImage(blob,url){
   showPreview.value=true;

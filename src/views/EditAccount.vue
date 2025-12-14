@@ -81,7 +81,7 @@
 import AsideBar from "@/components/navigation/AsideBar.vue";
 import AvatarView from "@/components/utils/AvatarView.vue";
 import AvatarCropper from "@/components/utils/AvatarCropper.vue";
-import {computed, onMounted, ref} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import {useUserStore} from "@/stores/index.js";
 import {useRouter} from "vue-router";
 
@@ -208,12 +208,19 @@ function hasBanWord(bio) {
 
 async function handleFileUpload(event) {
   const file = event.target.files[0];
-  console.log("caca",URL.createObjectURL(file))
+  // console.log("caca",URL.createObjectURL(file))
 
   previewAvatar.value = URL.createObjectURL(file);
   showCropper.value = true; // ← Active le cropper après avoir chargé l'image
 
 }
+
+onBeforeUnmount(()=> {
+
+  if (previewAvatar.value) {
+    URL.revokeObjectURL(previewAvatar.value)
+  }
+})
 
 
 function triggerUpload() {

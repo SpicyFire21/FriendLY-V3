@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import {computed, onBeforeUnmount} from 'vue';
 
 // Props
 const props = defineProps({
@@ -53,6 +53,15 @@ const avatarSrc = computed(() => {
 
   return props.avatar; // URL ou base64 déjà prêt
 });
+
+onBeforeUnmount(()=> {
+
+  if (avatarSrc) {
+    URL.revokeObjectURL(avatarSrc)
+  }
+})
+
+
 </script>
 
 <style>

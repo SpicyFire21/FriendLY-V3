@@ -27,7 +27,7 @@
                 <p class="message">{{ item.content }}</p>
               </div>
               <!-- affiche juste l’heure du message -->
-              <em>{{$DayMonthYear(item.postedat)}}</em>
+              <em>{{$DayMonthYear(item.createdat)}}</em>
             </div>
 
           </div>
