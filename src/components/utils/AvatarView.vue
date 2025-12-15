@@ -9,9 +9,8 @@
 </template>
 
 <script setup>
-import {computed, onBeforeUnmount} from 'vue';
+import { ref, watch, onBeforeUnmount } from 'vue'
 
-// Props
 const props = defineProps({
   avatar: {
     type: [String, Object],
@@ -25,44 +24,48 @@ const props = defineProps({
     type: Boolean,
     default: true
   }
-});
-
-// Image par défaut
-const defaultAvatar = new URL('@/assets/no_avatar.png', import.meta.url).href;
-
-// Computed pour déterminer la source de l'image
-const avatarSrc = computed(() => {
-  if (!props.avatar) return defaultAvatar;
-
-  // Si c'est un Buffer stocké côté serveur
-  if (props.avatar.type === 'Buffer' && Array.isArray(props.avatar.data)) {
-    const uint8Array = new Uint8Array(props.avatar.data);
-
-    // Détecter le type MIME via les premiers octets
-    const header = uint8Array.slice(0, 4).join(' ');
-    let mimeType = 'image/png';
-
-    if (header === '255 216 255 224' || header === '255 216 255 225') mimeType = 'image/jpeg';
-    else if (header === '137 80 78 71') mimeType = 'image/png';
-    else if (header === '71 73 70 56') mimeType = 'image/gif';
-    else if (header === '82 73 70 70') mimeType = 'image/webp';
-
-    const blob = new Blob([uint8Array], { type: mimeType });
-    return URL.createObjectURL(blob);
-  }
-
-  return props.avatar; // URL ou base64 déjà prêt
-});
-
-onBeforeUnmount(()=> {
-
-  if (avatarSrc) {
-    URL.revokeObjectURL(avatarSrc)
-  }
 })
 
+const defaultAvatar = new URL('@/assets/no_avatar.png', import.meta.url).href
+const avatarSrc = ref(defaultAvatar)
 
+function revoke() {
+  if (avatarSrc.value && avatarSrc.value.startsWith('blob:')) {
+    URL.revokeObjectURL(avatarSrc.value)
+  }
+}
+
+watch(
+    () => props.avatar,
+    (avatar) => {
+      revoke()
+
+      if (!avatar) {
+        avatarSrc.value = defaultAvatar
+        return
+      }
+
+      if (avatar.type === 'Buffer' && Array.isArray(avatar.data)) {
+        const bytes = new Uint8Array(avatar.data)
+        const header = bytes.slice(0, 4).join(' ')
+        let mime = 'image/png'
+
+        if (header === '255 216 255 224' || header === '255 216 255 225') mime = 'image/jpeg'
+        else if (header === '71 73 70 56') mime = 'image/gif'
+        else if (header === '82 73 70 70') mime = 'image/webp'
+
+        avatarSrc.value = URL.createObjectURL(new Blob([bytes], { type: mime }))
+        return
+      }
+
+      avatarSrc.value = avatar
+    },
+    { immediate: true }
+)
+
+onBeforeUnmount(revoke)
 </script>
+
 
 <style>
 .avatar {

@@ -2,7 +2,9 @@
   <nav class="stories-list">
     <div v-for="(item,index) in userStore.followers" :key="item.id" class="storie">
 
-      <StoriesView :avatar="userStore.getAvatarByUserID(item.iduser_1)" :index="index" :activeIndex="activeIndex" @update-active="setActiveIndex" :storieName="item.pseudo"/>
+      <StoriesView
+          :avatar="userStore.getAvatarByUserID(item.iduser_1)"
+          :index="index" :activeIndex="activeIndex" @update-active="setActiveIndex" :storieName="item.pseudo"/>
     </div>
     <div v-if="userStore.followers.length < 5" class="add-more-friends">
       Soyez plus FriendLY !

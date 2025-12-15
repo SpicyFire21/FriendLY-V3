@@ -66,17 +66,11 @@
       <i @click="closeComments" class="fa-lefttop fa-3xl fa-solid fa-xmark fa-2xl" style="color: var(--BleuClair);"></i>
       <div class="row-post-comments">
         <div class="post-view-comment-container">
-          <!--          <img :src="require(`@/assets/${postdata.image}`)" alt="post image" class="post-view-comment">-->
-
           <img
               :src="avatarSrc"
               :alt="props.postdata.description"
-
               class="post-view-comment"
           />
-          <!--          <img v-else src="@/assets/nopost.png" alt="">-->
-
-
         </div>
 
         <div class="row-post-comments-container" :class="!showComment ? 'hide':'' ">
@@ -105,20 +99,21 @@
 
               </div>
             </div>
-            <div class="send-comment">
-              <i class="fa-selfcenter fa-regular fa-face-laugh-beam fa-xl" style="color: var(--Violet);"></i>
-              <textarea @input="handleInputComment" v-model="comment" placeholder="Écrivez votre Commentaire..." rows="2"
-                        class="input-message-item"></textarea>
-              <!--              <i class="fa-selfcenter fa-regular fa-image fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
-              <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
-              <!--              <i class="fa-selfcenter fa-regular fa-note-sticky fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
-              <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
-              <button :class="showSendBtn ? 'show' : 'grayshow'" style="color: var(--Violet);" @click="onSendComment">
-                Envoyer
-              </button>
+
+          </div>
+          <div class="send-comment">
+            <i class="fa-selfcenter fa-regular fa-face-laugh-beam fa-xl" style="color: var(--Violet);"></i>
+            <textarea @input="handleInputComment" v-model="comment" placeholder="Écrivez votre Commentaire..." rows="2"
+                      class="input-message-item"></textarea>
+            <!--              <i class="fa-selfcenter fa-regular fa-image fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
+            <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
+            <!--              <i class="fa-selfcenter fa-regular fa-note-sticky fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
+            <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
+            <button :class="showSendBtn ? 'show' : 'grayshow'" style="color: var(--Violet);" @click="onSendComment">
+              Envoyer
+            </button>
 
 
-            </div>
           </div>
         </div>
       </div>
@@ -131,8 +126,10 @@
 <script setup>
 import AvatarView from "@/components/utils/AvatarView.vue";
 import NameTag from "@/components/utils/NameTag.vue";
-import {computed, getCurrentInstance, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed, getCurrentInstance,watch, onBeforeUnmount, onMounted, ref} from "vue";
 import {useCommentStore, usePostStore, useUserStore} from "@/stores/index.js";
+
+const avatarSrc = ref(null);
 
 const socket = getCurrentInstance().appContext.config.globalProperties.$socket
 
@@ -159,34 +156,44 @@ const defaultAvatar = computed(()=> {
   return new URL('@/assets/no_avatar.png', import.meta.url).href
 })
 
-const avatarSrc = computed(()=> {
-  if (!props.postdata.image) {
-    return defaultAvatar;
+
+
+function revoke() {
+  if (avatarSrc.value && avatarSrc.value.startsWith("blob:")) {
+    URL.revokeObjectURL(avatarSrc.value);
   }
+}
 
-  if (props.postdata.image && props.postdata.image.type === "Buffer" && Array.isArray(props.postdata.image.data)) {
-    const uint8Array = new Uint8Array(props.postdata.image.data);
+watch(
+    () => props.postdata?.image,
+    (image) => {
+      revoke();
 
-    // Lire les 4 premiers octets pour deviner le type
-    const header = uint8Array.slice(0, 4).join(' ');
-    let mimeType = 'image/png'; // fallback
+      if (!image) {
+        avatarSrc.value = null;
+        return;
+      }
 
-    if (header === '255 216 255 224' || header === '255 216 255 225') {
-      mimeType = 'image/jpeg';
-    } else if (header === '137 80 78 71') {
-      mimeType = 'image/png';
-    } else if (header === '71 73 70 56') {
-      mimeType = 'image/gif';
-    } else if (header === '82 73 70 70') {
-      mimeType = 'image/webp';
-    }
+      if (image.type === "Buffer" && Array.isArray(image.data)) {
+        const bytes = new Uint8Array(image.data);
+        const header = bytes.slice(0, 4).join(" ");
+        let mime = "image/png";
 
-    const blob = new Blob([uint8Array], { type: mimeType });
-    return URL.createObjectURL(blob);
-  }
+        if (header === "255 216 255 224" || header === "255 216 255 225") mime = "image/jpeg";
+        else if (header === "71 73 70 56") mime = "image/gif";
+        else if (header === "82 73 70 70") mime = "image/webp";
 
-  return props.postdata.image; // déjà une URL ou base64
-})
+        avatarSrc.value = URL.createObjectURL(new Blob([bytes], { type: mime }));
+        return;
+      }
+
+      avatarSrc.value = image;
+    },
+    { immediate: true }
+);
+
+onBeforeUnmount(revoke);
+
 
 
 const isLoved = computed(() => {
@@ -277,8 +284,7 @@ async function onSendComment() {
 
 
 socket.on("post-comment", (data) => {
-
-  if(commentStore.comments !==null){
+  if(commentStore.comments !==null && data.comment !==  ""){
     commentStore.addComment(data);
   }
   console.log(data)
@@ -287,7 +293,6 @@ socket.on("post-comment", (data) => {
 
 
 onMounted(async()=>{
-  // isMounted = true;  // On marque le composant comme monté
   try {
     await postStore.getPostsToStore();
     await userStore.getUsersToStore();
@@ -405,7 +410,7 @@ onBeforeUnmount(()=> {
 .row-post-comments {
   display: flex;
   background-color: var(--BlancPur);
-  height: fit-content;
+  height: 500px;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -415,6 +420,7 @@ onBeforeUnmount(()=> {
   display: flex;
   flex-direction: column;
   width: 350px;
+  height: 100%;
 }
 
 .post-view-comment {
@@ -432,8 +438,8 @@ onBeforeUnmount(()=> {
 .comments-scroll {
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
+  overflow: auto;
   align-items: flex-end;
 }
 .send-comment {
@@ -442,9 +448,14 @@ onBeforeUnmount(()=> {
   padding: 5px;
   border-top: 1px solid var(--GrisNuit);
   gap: 5px;
+
+  flex-shrink: 0;
+
 }
 .comments-scroll-content {
+  flex: 1;
   width: 100%;
-  height: 100%;
+  max-height: fit-content;
+  overflow-y: auto;
 }
 </style>

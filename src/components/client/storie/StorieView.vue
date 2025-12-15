@@ -1,6 +1,6 @@
 <template>
   <div class="storie-view" @click="viewStorie()">
-    <AvatarView :avatar="avatarSRC" size="50px"/>
+    <AvatarView :avatar="avatar" size="50px"/>
     <div class="storie-content" v-if="index === activeIndex">
       <p>{{storieName}}</p>
     </div>
@@ -30,17 +30,6 @@ const props = defineProps({
   }
 });
 
-
-const avatarSRC = computed(()=>{
-  if(props.avatar === "ERROR-AVATAR-USER-NOT-FOUND"){
-    return defaultAvatar;
-  }
-  return props.avatar
-})
-
-const defaultAvatar = computed(()=> {
-  new URL('@/assets/no_avatar.png', import.meta.url).href
-})
 
 
 function viewStorie() {

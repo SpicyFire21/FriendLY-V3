@@ -71,7 +71,7 @@ async function follow(id){
     iduser:userStore.currentUser.id,
     usertarget:id
   }
-  await userStore.addFollower(data);
+  await userStore.addFollowerAction(data);
 }
 async function Unfollow(id){
   const data = {
