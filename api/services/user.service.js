@@ -269,15 +269,15 @@ async function getSubscribersByUserId(id){
 }
 
 export default {
-    getUsers,
-    getUserById,
+    getUsers,                       //
+    getUserById,                    //
     loginUser,
-    deleteUserById,
+    deleteUserById,                 //
     updateUser,
     addUser,
     addFollower,
     removeFollower,
     getFollowers,
-    getFollowersByUserId,
-    getSubscribersByUserId
+    getFollowersByUserId,           //
+    getSubscribersByUserId          //
 }

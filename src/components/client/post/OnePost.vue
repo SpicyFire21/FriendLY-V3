@@ -62,62 +62,13 @@
       <em>{{$DayMonthYear(props.postdata.postedat)}}</em>
     </div>
 
-    <div class="comments" :class="showComment ? 'show-comments' : 'hide'">
-      <i @click="closeComments" class="fa-lefttop fa-3xl fa-solid fa-xmark fa-2xl" style="color: var(--BleuClair);"></i>
-      <div class="row-post-comments">
-        <div class="post-view-comment-container">
-          <img
-              :src="avatarSrc"
-              :alt="props.postdata.description"
-              class="post-view-comment"
-          />
-        </div>
+    <CommentDialog
+        :avatar="avatarSrc"
+        :showComment="showComment"
+        :postdata="props.postdata"
+        @close="showComment = false"
 
-        <div class="row-post-comments-container" :class="!showComment ? 'hide':'' ">
-          <div class="post-author">
-            <AvatarView :avatar="userStore.getUserById(props.postdata.authorid).avatar" size="40px"/>
-            <NameTag :user="userStore.getUserById(props.postdata.authorid)"/>
-            <v-spacer/>
-            <i class="fa-solid fa-ellipsis fa-xl" style="color: var(--Violet);"></i>
-          </div>
-          <div class="comments-scroll">
-            <div class="comments-scroll-content">
-              <div v-for="(comment, date) in commentStore.comments" :key="date">
-
-                <div class="comment">
-                  <div class="comment-author">
-                    <AvatarView :avatar="userStore.getUserById(comment.iduser).avatar" size="35px"/>
-                  </div>
-                  <div class="comment-body">
-                    <NameTag :user="userStore.getUserById(comment.iduser)"/>
-                    <p>{{comment.comment}}</p>
-                    <em style="font-size:12px">{{$DayMonthYear2(comment.postedat)}}</em>
-                  </div>
-
-                </div><hr>
-
-
-              </div>
-            </div>
-
-          </div>
-          <div class="send-comment">
-            <i class="fa-selfcenter fa-regular fa-face-laugh-beam fa-xl" style="color: var(--Violet);"></i>
-            <textarea @input="handleInputComment" v-model="comment" placeholder="Écrivez votre Commentaire..." rows="2"
-                      class="input-message-item"></textarea>
-            <!--              <i class="fa-selfcenter fa-regular fa-image fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
-            <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
-            <!--              <i class="fa-selfcenter fa-regular fa-note-sticky fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
-            <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
-            <button :class="showSendBtn ? 'show' : 'grayshow'" style="color: var(--Violet);" @click="onSendComment">
-              Envoyer
-            </button>
-
-
-          </div>
-        </div>
-      </div>
-    </div>
+    />
 
 
   </div>
@@ -126,20 +77,14 @@
 <script setup>
 import AvatarView from "@/components/utils/AvatarView.vue";
 import NameTag from "@/components/utils/NameTag.vue";
-import {computed, getCurrentInstance,watch, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed,watch, onBeforeUnmount, onMounted, ref} from "vue";
 import {useCommentStore, usePostStore, useUserStore} from "@/stores/index.js";
+import CommentDialog from "@/components/client/comments/CommentDialog.vue";
+import AvatarCropper from "@/components/utils/AvatarCropper.vue";
 
 const avatarSrc = ref(null);
 
-const socket = getCurrentInstance().appContext.config.globalProperties.$socket
-
-
 let showComment = ref(false)
-// let isLoved = ref(false)
-// let isLiked = ref(false)
-// let isMounted = ref(false)
-let comment = ref("")
-let showSendBtn = ref(false)
 
 const props = defineProps({
   postdata: {
@@ -152,9 +97,7 @@ const postStore = usePostStore();
 const userStore = useUserStore();
 const commentStore = useCommentStore();
 
-const defaultAvatar = computed(()=> {
-  return new URL('@/assets/no_avatar.png', import.meta.url).href
-})
+
 
 
 
@@ -237,9 +180,6 @@ async function toggleReaction(postid, type) {
   }
 }
 
-
-
-
 async function handleLove(postid) {
   await toggleReaction(postid,"love");
 }
@@ -249,47 +189,15 @@ async function handleLike(postid) {
 function handleSave(postid) {
   console.log(postid, "save");
 }
-function handleComment(postid) {
+function handleComment() {
   showComment.value = true;
 }
 function handleShare(postid) {
   console.log(postid, "share");
 }
-function closeComments() {
-  showComment.value = false;
-}
-
-function handleInputComment(event) {
-  // this.adjustHeight(event)
-  showSendButton(event)
-}
-function showSendButton() {
-  showSendBtn.value = comment.value !== "";
-}
-async function onSendComment() {
-  if (showSendBtn) {
-    // code a finir pour l'envoie de commentaire
-    const data = {
-      idpost: props.postdata.id,
-      iduser: userStore.currentUser.id,
-      comment: comment.value,
-      postedat: new Date().toISOString()
-    }
-    socket.emit("post-comment", data);
-    comment.value='';
-  }
 
 
-}
 
-
-socket.on("post-comment", (data) => {
-  if(commentStore.comments !==null && data.comment !==  ""){
-    commentStore.addComment(data);
-  }
-  console.log(data)
-  console.log(commentStore.comments)
-});
 
 
 onMounted(async()=>{
@@ -306,33 +214,12 @@ onMounted(async()=>{
   }
 })
 
-onBeforeUnmount(()=> {
-  socket.off("post-comment");
-  if (avatarSrc) {
-    URL.revokeObjectURL(avatarSrc)
-  }
-})
+
 
 </script>
 
 <style scoped>
-.comment-author {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.comment-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-left: 10px;
-}
-.comment {
- display: flex;
-  flex-direction: row;
-  padding: 0 10px;
-}
+
 
 .post-view {
   aspect-ratio: 1/1;
@@ -383,79 +270,4 @@ onBeforeUnmount(()=> {
 
 }
 
-.show-comments {
-  background-color: var(--blurBackground);
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 5;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.hide {
-  display: none !important;
-}
-
-.comments {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-.row-post-comments {
-  display: flex;
-  background-color: var(--BlancPur);
-  height: 500px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-}
-
-.row-post-comments-container {
-  display: flex;
-  flex-direction: column;
-  width: 350px;
-  height: 100%;
-}
-
-.post-view-comment {
-  aspect-ratio: 1/1;
-  width:500px;
-  object-fit: cover;
-  border-right: var(--GrisNuit) 2px solid;
-}
-
-.post-view-comment-container {
-  aspect-ratio: 1/1;
-  max-height: 500px;
-}
-
-.comments-scroll {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  overflow: auto;
-  align-items: flex-end;
-}
-.send-comment {
-  display: flex;
-  width: 100%;
-  padding: 5px;
-  border-top: 1px solid var(--GrisNuit);
-  gap: 5px;
-
-  flex-shrink: 0;
-
-}
-.comments-scroll-content {
-  flex: 1;
-  width: 100%;
-  max-height: fit-content;
-  overflow-y: auto;
-}
 </style>
