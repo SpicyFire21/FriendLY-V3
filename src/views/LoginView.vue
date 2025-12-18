@@ -303,4 +303,8 @@ button:hover {
   aspect-ratio: 1/1;
   width: 60px;
 }
+
+a {
+  color: var(--BleuFonce);
+}
 </style>

@@ -84,6 +84,7 @@
             <v-spacer></v-spacer>
 
             <div class="btn-count-post">
+
               <button @click="handleSave(props.postdata.id)"><i class="fa-selfcenter fa-solid fa-bookmark fa-xl"
                                                                 style="color: var(--green);"></i></button>
               <b style="font-size: 12px;color:var(--green) ;">{{ postStore.getCountSaves(postdata.id) }}</b>
@@ -321,7 +322,7 @@ onBeforeUnmount(()=> {
   flex-direction: column;
 
   width: 100%;
-  padding: 20px 10px 15px 10px;
+  padding: 15px 10px 15px 10px;
   border-top: 1px solid var(--GrisNuit);
   gap: 10px;
   flex-shrink: 0;
@@ -343,15 +344,18 @@ onBeforeUnmount(()=> {
 }
 
 .btn-count-post {
+  margin-top: 10px;
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 .btn-count-post-content {
   display: flex;
-  gap: 10px;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 </style>

@@ -19,4 +19,9 @@ const props = defineProps({
 p  {
   margin: 0 !important;
 }
+
+p:hover {
+  color:var(--Violet);
+  transition: ease-in-out 0.4s ;
+}
 </style>

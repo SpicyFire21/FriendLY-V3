@@ -1,12 +1,20 @@
 <template>
   <div v-if="props.postdata">
     <div class="post-author">
-      <AvatarView
-          :avatar="userStore.getUserById(props.postdata.authorid).avatar"
-          size="40px"
-          @click="goTo(userStore.getUserById(props.postdata.authorid).pseudo)"
-      />
-      <NameTag :user="userStore.getUserById(props.postdata.authorid)"/>
+      <div
+          class="post-author-click"
+          @click="goTo(userStore.getUserById(props.postdata.authorid).pseudo)">
+        <AvatarView
+            class="post-author-click-item"
+            :avatar="userStore.getUserById(props.postdata.authorid).avatar"
+            size="40px"
+        />
+        <NameTag
+
+            :user="userStore.getUserById(props.postdata.authorid)"
+        />
+      </div>
+
       <v-spacer/>
       <i class="fa-solid fa-ellipsis fa-xl" style="color: var(--Violet);"></i>
     </div>
@@ -54,6 +62,7 @@
         <v-spacer></v-spacer>
 
         <div class="btn-count-post">
+
           <button @click="handleSave(props.postdata.id)"><i class="fa-selfcenter fa-solid fa-bookmark fa-xl"
                                                       style="color: var(--green);"></i></button>
           <b style="font-size: 12px;color:var(--green) ;">{{ postStore.getCountSaves(postdata.id) }}</b>
@@ -227,6 +236,25 @@ onMounted(async()=>{
 </script>
 
 <style scoped>
+.post-author-click {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.post-author-click:hover {
+  transform: scale(1.01);
+  transition: ease-in-out 0.15s ;
+
+}
+
+.post-author-click:hover .post-author-click-item{
+  animation: pulse 0.6s ease-in-out forwards;
+  animation-iteration-count: 1;
+
+}
 
 
 .post-view {
