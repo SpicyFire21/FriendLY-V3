@@ -1,7 +1,11 @@
 <template>
   <div v-if="props.postdata">
     <div class="post-author">
-      <AvatarView :avatar="userStore.getUserById(props.postdata.authorid).avatar" size="40px"/>
+      <AvatarView
+          :avatar="userStore.getUserById(props.postdata.authorid).avatar"
+          size="40px"
+          @click="goTo(userStore.getUserById(props.postdata.authorid).pseudo)"
+      />
       <NameTag :user="userStore.getUserById(props.postdata.authorid)"/>
       <v-spacer/>
       <i class="fa-solid fa-ellipsis fa-xl" style="color: var(--Violet);"></i>
@@ -81,8 +85,10 @@ import {computed,watch, onBeforeUnmount, onMounted, ref} from "vue";
 import {useCommentStore, usePostStore, useUserStore} from "@/stores/index.js";
 import CommentDialog from "@/components/client/comments/CommentDialog.vue";
 import AvatarCropper from "@/components/utils/AvatarCropper.vue";
+import {useRouter} from "vue-router";
 
 const avatarSrc = ref(null);
+const router = useRouter()
 
 let showComment = ref(false)
 
@@ -98,7 +104,9 @@ const userStore = useUserStore();
 const commentStore = useCommentStore();
 
 
-
+const goTo = async(pseudo)=>{
+  await router.push({ path: `/${pseudo}` })
+}
 
 
 function revoke() {

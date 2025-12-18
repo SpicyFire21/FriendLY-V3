@@ -6,7 +6,7 @@ import AccountView from '@/views/AccountView.vue'
 import SettingsView from '@/components/client/account/SettingsView.vue'
 import SaveView from '@/components/client/account/SaveView.vue'
 import PostView from '@/components/client/post/PostView.vue'
-import LoginView from '@/components/client/account/LoginView.vue'
+import LoginView from '@/views/LoginView.vue'
 import EditAccount from '@/views/EditAccount.vue'
 
 import {useUserStore, usePostStore, useMessageStore} from '@/stores'

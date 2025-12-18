@@ -19,6 +19,10 @@ export const useUserStore = defineStore('users', ()=>{
         const user = users.value.find(u => u.id === id)
         return user ? user.avatar : "ERROR-AVATAR-USER-NOT-FOUND"
     }
+    const getUserByPseudo = (pseudo) => {
+        return users.value.find(u => u.pseudo === pseudo) || "ERROR-USER-NOT-FOUND"
+    }
+
 
     //mutation
     const updateUsers = (data) =>{
@@ -153,6 +157,7 @@ export const useUserStore = defineStore('users', ()=>{
         getCountFollowersOfCurrentUser,
         getCountSubscribersOfCurrentUser,
         getAvatarByUserID,
+        getUserByPseudo,
         // actions
         updateUsers,
         updateCurrentUser,

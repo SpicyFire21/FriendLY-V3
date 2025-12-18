@@ -12,7 +12,11 @@
 
       <div class="row-post-comments-container" :class="!props.showComment ? 'hide':'' ">
         <div class="post-author">
-          <AvatarView :avatar="userStore.getUserById(props.postdata.authorid).avatar" size="40px"/>
+          <AvatarView
+              :avatar="userStore.getUserById(props.postdata.authorid).avatar"
+              size="40px"
+              @click=""
+          />
           <NameTag :user="userStore.getUserById(props.postdata.authorid)"/>
           <v-spacer/>
           <i class="fa-solid fa-ellipsis fa-xl" style="color: var(--Violet);"></i>
@@ -26,9 +30,15 @@
                   <AvatarView :avatar="userStore.getUserById(comment.iduser).avatar" size="35px"/>
                 </div>
                 <div class="comment-body">
-                  <NameTag :user="userStore.getUserById(comment.iduser)"/>
+
+                  <div style="display: flex; align-items: center; gap: 5px">
+                    <NameTag :user="userStore.getUserById(comment.iduser)"/>
+                    <em style="font-size:12px;">{{$DayMonthYear2(comment.postedat)}}</em>
+                  </div>
+
+
+
                   <p>{{comment.comment}}</p>
-                  <em style="font-size:12px">{{$DayMonthYear2(comment.postedat)}}</em>
                 </div>
 
               </div>
@@ -39,16 +49,58 @@
 
         </div>
         <div class="send-comment">
-          <i class="fa-selfcenter fa-regular fa-face-laugh-beam fa-xl" style="color: var(--Violet);"></i>
-          <textarea @input="handleInputComment" v-model="comment" placeholder="Écrivez votre Commentaire..." rows="2"
-                    class="input-message-item"></textarea>
-          <!--              <i class="fa-selfcenter fa-regular fa-image fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
-          <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
-          <!--              <i class="fa-selfcenter fa-regular fa-note-sticky fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
-          <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
-          <button :class="showSendBtn ? 'show' : 'grayshow'" style="color: var(--Violet);" @click="onSendComment">
-            Envoyer
-          </button>
+          <div class="send-comment-btn">
+            <div class="btn-count-post">
+              <div v-if="isLoved" class="btn-count-post-content">
+                <button @click="handleLove(props.postdata.id)">
+                  <i class="fa-selfcenter fa-solid fa-heart fa-xl" style="color: var(--red);"></i>
+                </button>
+                <b style="font-size: 12px;color:var(--red) ;">{{ postStore.getCountLoves(postdata.id) }}</b>
+              </div>
+              <div v-if="!isLoved" class="btn-count-post-content">
+                <button @click="handleLove(props.postdata.id)"><i class="fa-selfcenter fa-regular fa-heart fa-xl" style="color: var(--red);"></i></button>
+                <b style="font-size: 12px;color:var(--red) ;">{{ postStore.getCountLoves(props.postdata.id) }}</b>
+              </div>
+            </div>
+
+            <div class="btn-count-post">
+              <div v-if="isLiked" class="btn-count-post-content">
+                <button @click="handleLike(props.postdata.id)"><i class="fa-selfcenter fa-solid fa-thumbs-up fa-xl"
+                                                                  style="color: var(--Violet);"></i></button>
+                <b style="font-size: 12px;color:var(--Violet) ;">{{ postStore.getCountLikes(props.postdata.id) }}</b>
+              </div>
+              <div v-if="!isLiked" class="btn-count-post-content">
+                <button @click="handleLike(props.postdata.id)"><i class="fa-selfcenter fa-regular fa-thumbs-up fa-xl"
+                                                                  style="color: var(--Violet);"></i></button>
+                <b style="font-size: 12px;color:var(--Violet) ;">{{ postStore.getCountLikes(props.postdata.id) }}</b>
+              </div>
+            </div>
+
+
+            <div class="btn-count-post">
+              <button @click="handleShare(props.postdata.id)"><i class="fa-selfcenter fa-solid fa-share fa-xl"
+                                                                 style="color: var(--BleuClair);"></i></button>
+            </div>
+            <v-spacer></v-spacer>
+
+            <div class="btn-count-post">
+              <button @click="handleSave(props.postdata.id)"><i class="fa-selfcenter fa-solid fa-bookmark fa-xl"
+                                                                style="color: var(--green);"></i></button>
+              <b style="font-size: 12px;color:var(--green) ;">{{ postStore.getCountSaves(postdata.id) }}</b>
+            </div>
+          </div>
+          <div class="send-comment-inputs">
+            <i class="fa-selfcenter fa-regular fa-face-laugh-beam fa-xl" style="color: var(--Violet);"></i>
+            <textarea @input="handleInputComment" v-model="comment" placeholder="Écrivez votre Commentaire..." rows="2"
+                      class="input-message-item"></textarea>
+            <!--              <i class="fa-selfcenter fa-regular fa-image fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
+            <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
+            <!--              <i class="fa-selfcenter fa-regular fa-note-sticky fa-xl" :class="!showSendBtn ? 'show' : 'hide'"-->
+            <!--                 style="color: var(&#45;&#45;Violet);"></i>-->
+            <button :class="showSendBtn ? 'show' : 'grayshow'" style="color: var(--Violet);" @click="onSendComment">
+              Envoyer
+            </button>
+          </div>
 
 
         </div>
@@ -61,7 +113,7 @@
 <script setup>
 import NameTag from "@/components/utils/NameTag.vue";
 import AvatarView from "@/components/utils/AvatarView.vue";
-import {getCurrentInstance, onBeforeUnmount, ref, watch} from "vue";
+import {computed, getCurrentInstance, onBeforeUnmount, ref, watch} from "vue";
 import {useCommentStore, usePostStore, useUserStore} from "@/stores/index.js";
 const socket = getCurrentInstance().appContext.config.globalProperties.$socket
 const emit = defineEmits(["close"]);
@@ -88,6 +140,58 @@ const props = defineProps({
 
 const userStore = useUserStore();
 const commentStore = useCommentStore();
+const postStore = usePostStore();
+
+
+const isLoved = computed(() => {
+  const uid = userStore.currentUser.id
+
+  return postStore.loves.some(
+      l => l.idpost === props.postdata.id && l.iduser === uid
+  )
+})
+
+const isLiked = computed(() => {
+  const uid = userStore.currentUser.id
+  return postStore.likes.some(
+      l => l.idpost === props.postdata.id && l.iduser === uid
+  )
+})
+
+async function toggleReaction(postid, type) {
+  const uid = userStore.currentUser.id
+  const data = { idpost: postid, iduser: uid }
+
+  const loved = postStore.loves.some(l => l.idpost === postid && l.iduser === uid)
+  const liked = postStore.likes.some(l => l.idpost === postid && l.iduser === uid)
+
+  if (type === "love") {
+    if (loved) {
+      await postStore.removeLoveAction(data)
+    } else {
+      if (liked) await postStore.removeLikeAction(data)
+      await postStore.addLoveAction(data)
+    }
+  }
+
+  if (type === "like") {
+    if (liked) {
+      await postStore.removeLikeAction(data)
+    } else {
+      if (loved) await postStore.removeLoveAction(data)
+      await postStore.addLikeAction(data)
+    }
+  }
+}
+
+async function handleLove(postid) {
+  await toggleReaction(postid,"love");
+}
+async function handleLike(postid) {
+  await toggleReaction(postid,"like");
+}
+
+
 
 function closeComments() {
   emit("close", false);
@@ -214,11 +318,12 @@ onBeforeUnmount(()=> {
 }
 .send-comment {
   display: flex;
-  width: 100%;
-  padding: 5px;
-  border-top: 1px solid var(--GrisNuit);
-  gap: 5px;
+  flex-direction: column;
 
+  width: 100%;
+  padding: 20px 10px 15px 10px;
+  border-top: 1px solid var(--GrisNuit);
+  gap: 10px;
   flex-shrink: 0;
 
 }
@@ -227,6 +332,26 @@ onBeforeUnmount(()=> {
   width: 100%;
   max-height: fit-content;
   overflow-y: auto;
+}
+
+.send-comment-inputs {
+  display: flex;
+}
+.send-comment-btn {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-count-post {
+  display: flex;
+  align-items: flex-start;
+}
+
+.btn-count-post-content {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: column;
 }
 
 </style>

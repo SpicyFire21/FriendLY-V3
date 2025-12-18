@@ -1,8 +1,16 @@
 <template>
   <div class="post-view-container">
-    <div v-for="(item, index) in postStore.getPostsByUser(userStore.currentUser.id)" :key="index" class="post-view-content">
+
+    <div
+        v-if="postStore.getPostsByUser(CurrentUser.id).length !==0"
+         v-for="(item, index) in postStore.getPostsByUser(CurrentUser.id)"
+        :key="index"
+        class="post-view-content">
       <preview-post :postdata="item"/>
 
+    </div>
+    <div v-else>
+      <h1>Poster votre première publication !</h1>
     </div>
   </div>
 </template>
@@ -10,9 +18,15 @@
 <script setup>
 import PreviewPost from "@/components/client/account/previewPost.vue";
 import {usePostStore, useUserStore} from "@/stores/index.js";
+import {computed} from "vue";
+import {useRoute} from "vue-router";
+const route = useRoute()
 
-
-const userStore = useUserStore();
+const routeUserName = computed(() => route.params.pseudo)
+const CurrentUser = computed(() => {
+  return usersStore.getUserByPseudo(routeUserName.value)
+})
+const usersStore = useUserStore();
 const postStore = usePostStore();
 
 </script>

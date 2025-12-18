@@ -208,7 +208,7 @@ const login = async () => {
     if (response.error === 0) {
       sessionStorage.setItem("currentUser", JSON.stringify(response.data))
       userStore.updateCurrentUser(response.data)
-      router.push({ name: "home" })
+      await router.push({ name: "home" })
     } else {
       errorMessage.value = response.data
     }

@@ -1,33 +1,33 @@
 <template>
   <v-container fluid class="pa-0 ma-0">
-    <AsideBar />
+    <AsideBar/>
 
     <div class="account-container">
       <!-- Affiche uniquement si utilisateur courant -->
-      <div class="account-content" v-if="usersStore.currentUser">
-        <AvatarView size="200px" :avatar="usersStore.currentUser.avatar" />
+      <div class="account-content" v-if="CurrentUser">
+        <AvatarView size="200px" :avatar="CurrentUser.avatar"/>
 
         <div class="account-data">
           <div class="account-item">
-            <b style="font-size: 25px">{{ usersStore.currentUser.pseudo }}</b>
-            <button @click="goEditAccount" class="edit-button">Modifier le profil</button>
+            <b style="font-size: 25px">{{ CurrentUser.pseudo }}</b>
+            <button :hidden="!ownProfile" @click="goEditAccount" class="edit-button">Modifier le profil</button>
           </div>
 
           <div class="account-item">
-            <p>{{ postsStore.getCountPostsByUser(usersStore.currentUser.id) }} publications</p>
+            <p>{{ postsStore.getCountPostsByUser(CurrentUser.id) }} publications</p>
             <p>{{ usersStore.getCountFollowersOfCurrentUser }} follow(s)</p>
             <p>{{ usersStore.getCountSubscribersOfCurrentUser }} follower(s)</p>
           </div>
 
           <div>
-            <p style="white-space: pre-line;">{{ usersStore.currentUser.bio }}</p>
+            <p style="white-space: pre-line;">{{ CurrentUser.bio }}</p>
           </div>
         </div>
       </div>
 
       <!-- Navigation interne -->
       <div class="account-content-picker">
-        <hr />
+        <hr/>
         <div class="account-picker">
           <div>
             <router-link :to="{ name: 'post' }" class="link">
@@ -50,17 +50,17 @@
       </div>
 
       <!-- Vue enfant -->
-      <router-view />
+      <router-view/>
     </div>
 
     <!-- Dialog -->
-    <CustomDialog />
+    <SendPost/>
   </v-container>
 </template>
 
 <script setup>
-import { onMounted } from "vue"
-import { useRouter } from "vue-router"
+import {computed, watch} from "vue"
+import {useRoute, useRouter} from "vue-router"
 
 
 import AsideBar from "@/components/navigation/AsideBar.vue"
@@ -70,30 +70,40 @@ import SendPost from "@/components/utils/sendPost.vue"
 
 import {usePostStore, useUserStore} from "@/stores/index.js";
 
-const CustomDialog = SendPost
-
 const router = useRouter()
+const route = useRoute()
 
 const usersStore = useUserStore()
 const postsStore = usePostStore()
 
+const routeUserName = computed(() => route.params.pseudo)
+const CurrentUser = computed(() => {
+  return usersStore.getUserByPseudo(routeUserName.value)
+})
+const ownProfile = computed(() => {
+  if (!CurrentUser.value || !usersStore.currentUser) return false
+  return CurrentUser.value.id === usersStore.currentUser.id
+})
 
 // Méthodes
 async function goEditAccount() {
-  if (usersStore.currentUser) {
-    await router.push({ name: "editaccount" })
+  if (CurrentUser.value.id === usersStore.currentUser.id) {
+    await router.push({name: "editaccount"})
   }
 }
 
-// Cycle de vie
-onMounted(async () => {
-  await postsStore.getPostsToStore()
-  await usersStore.getUsersToStore()
-  if (usersStore.currentUser) {
-    await usersStore.getFollowersByUserID(usersStore.currentUser.id)
-    await usersStore.getSubscribersByUserID(usersStore.currentUser.id)
-  }
-})
+// mise a jour a chaque fois que la route change
+watch(() => route.params.pseudo, async (pseudo) => {
+      await usersStore.getUsersToStore()
+      const user = usersStore.getUserByPseudo(pseudo)
+      if (user) {
+        await usersStore.getFollowersByUserID(user.id)
+        await usersStore.getSubscribersByUserID(user.id)
+      }
+    },
+    {immediate: true}
+)
+
 </script>
 
 <style>
